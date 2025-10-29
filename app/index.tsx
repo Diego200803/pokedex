@@ -12,5 +12,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#EF4444', // Fondo rojo igual al de la pokédex
   },
 });
