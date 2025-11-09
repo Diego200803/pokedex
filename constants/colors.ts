@@ -1,3 +1,4 @@
+//colors.ts
 import { TypeColors, StatTranslations } from '../types/Pokemon';
 
 export const TYPE_COLORS: TypeColors = {

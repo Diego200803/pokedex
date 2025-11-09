@@ -1,3 +1,4 @@
+//Pokemon.ts
 // Tipos relacionados con Pokémon
 
 export interface PokemonType {

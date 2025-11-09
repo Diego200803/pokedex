@@ -1,3 +1,4 @@
+//Pokedex.tsx
 import { 
   View, 
   Text, 
@@ -16,6 +17,8 @@ const { width } = Dimensions.get("window");
 import { useEffect, useState, useRef } from 'react';
 import { Pokemon } from '../types/Pokemon';
 import { TYPE_COLORS, STAT_TRANSLATIONS } from '../constants/colors';
+import AIChat from '../components/AIChat';
+import { GeminiService } from '../services/geminiService';
 
 export default function Pokedex() {
   const [pokemon, setPokemon] = useState<Pokemon[]>([]);
@@ -26,8 +29,10 @@ export default function Pokedex() {
   const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [searchNotFound, setSearchNotFound] = useState<boolean>(false);
+  const [chatVisible, setChatVisible] = useState<boolean>(false);
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const geminiService = useRef(new GeminiService()).current;
 
   useEffect(() => {
     fetchPokemon();
@@ -38,7 +43,6 @@ export default function Pokedex() {
       setFilteredPokemon(pokemon);
       setSearchNotFound(false);
     } else {
-      // Limpiar el # si el usuario lo incluye en la búsqueda
       const searchClean = search.replace('#', '');
       
       const filtered = pokemon.filter((p) => {
@@ -74,6 +78,9 @@ export default function Pokedex() {
       
       setPokemon(pokemonDetails);
       setFilteredPokemon(pokemonDetails);
+      
+      // Configurar el contexto de Pokémon para la IA
+      geminiService.setPokemonContext(pokemonDetails);
     } catch (error) {
       console.error('Error fetching pokemon:', error);
       setError('Error al cargar los Pokémon. Intenta de nuevo.');
@@ -355,6 +362,32 @@ export default function Pokedex() {
           renderItem={({ item }) => <PokemonCard item={item} />}
         />
       )}
+
+      {/* Botón flotante para abrir el chat */}
+      <TouchableOpacity
+        style={styles.chatButton}
+        onPress={() => setChatVisible(true)}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.chatButtonText}>💬</Text>
+      </TouchableOpacity>
+
+      {/* Modal del chat */}
+      <Modal
+        animationType="slide"
+        visible={chatVisible}
+        onRequestClose={() => setChatVisible(false)}
+      >
+        <View style={styles.chatModalContainer}>
+          <AIChat geminiService={geminiService} />
+          <TouchableOpacity
+            style={styles.closeChatButton}
+            onPress={() => setChatVisible(false)}
+          >
+            <Text style={styles.closeChatButtonText}>Cerrar</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
 
       <PokemonDetailModal />
     </View>
@@ -679,5 +712,37 @@ const styles = StyleSheet.create({
   progressBar: {
     height: '100%',
     borderRadius: 4,
+  },
+  chatButton: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    backgroundColor: '#DC2626',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
+  },
+  chatButtonText: {
+    fontSize: 28,
+  },
+  chatModalContainer: {
+    flex: 1,
+  },
+  closeChatButton: {
+    backgroundColor: '#DC2626',
+    padding: 16,
+    alignItems: 'center',
+  },
+  closeChatButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
